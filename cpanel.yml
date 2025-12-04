@@ -1,0 +1,28 @@
+---
+deployment:
+  tasks:
+    # 1. Masuk ke folder aplikasi
+    - export DEPLOYPATH=/home/tuga9652/public_html
+
+    # 2. Copy semua file ke folder public_html (kecuali yang dikecualikan)
+    - /bin/cp -R * $DEPLOYPATH
+    - /bin/cp -R .env $DEPLOYPATH
+
+    # 3. Install dependencies Laravel
+    - /usr/local/bin/composer install --no-dev --optimize-autoloader --working-dir=$DEPLOYPATH
+
+    # 4. Generate app key (jika belum ada)
+    - php $DEPLOYPATH/artisan key:generate --force
+
+    # 5. Migrate database
+    - php $DEPLOYPATH/artisan migrate --force
+
+    # 6. Cache optimizations
+    - php $DEPLOYPATH/artisan config:cache
+    - php $DEPLOYPATH/artisan route:cache
+    - php $DEPLOYPATH/artisan view:cache
+
+    # 7. Set permissions
+    - find $DEPLOYPATH/storage -type d -exec chmod 755 {} \;
+    - find $DEPLOYPATH/bootstrap/cache -type d -exec chmod 755 {} \;
+    - chmod -R 775 $DEPLOYPATH/storage
