@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -19,12 +18,11 @@
 
     <!-- Custom styles for this template-->
     <link href="{{ asset('sbadmin2/css/sb-admin-2.min.css') }}" rel="stylesheet">
-    <!-- Custom styles for table -->
+
+    <!-- DataTables -->
     <link href="{{ asset('sbadmin2/vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
     <!-- DataTables Buttons CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap4.min.css">
-
-
 </head>
 
 <body id="page-top">
@@ -35,71 +33,84 @@
         <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
-            <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
-                <div class="sidebar-brand-icon">
-                    <i class="fas fa-tasks"></i>
-                </div>
-                <div class="sidebar-brand-text mx-3">Tugasku</div>
+    <!-- Sidebar - Brand -->
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="#">
+        <div class="sidebar-brand-icon">
+            <i class="fas fa-tasks"></i>
+        </div>
+        <div class="sidebar-brand-text mx-3">Tugasku</div>
+    </a>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider my-0">
+
+    <!-- Nav Item - Dashboard (ADMIN & KARYAWAN) -->
+    <li class="nav-item {{ Request::is('dashboard') || Request::is('karyawan/dashboard') ? 'active' : '' }}">
+        @if(auth()->user()->jabatan === 'Admin')
+            {{-- Admin ke dashboard biasa --}}
+            <a class="nav-link" href="{{ route('dashboard') }}">
+        @else
+            {{-- Karyawan ke dashboard karyawan --}}
+            <a class="nav-link" href="{{ route('karyawanDashboard') }}">
+        @endif
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+        </a>
+    </li>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider">
+
+    @if(auth()->user()->jabatan === 'Admin')
+
+        <!-- MENU ADMIN -->
+        <div class="sidebar-heading">
+            MENU ADMIN
+        </div>
+
+        <!-- Nav Item - Data User -->
+        <li class="nav-item {{ $menuAdminUser ?? '' }}">
+            <a class="nav-link" href="{{ route('user') }}">
+                <i class="fas fa-fw fa-user"></i>
+                <span>Data User</span>
             </a>
+        </li>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider my-0">
+        <!-- Nav Item - Data Tugas -->
+        <li class="nav-item {{ $menuAdminTugas ?? '' }}">
+            <a class="nav-link" href="{{ route('tugas') }}">
+                <i class="fas fa-tasks"></i>
+                <span>Data Tugas</span>
+            </a>
+        </li>
 
-            <!-- Nav Item - Dashboard -->
-            <li class="nav-item {{ $menuDashboard ?? '' }}">
-                <a class="nav-link" href="{{ route('dashboard') }}">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
+    @else
 
-            <!-- Divider -->
-            <hr class="sidebar-divider">
+        <!-- MENU KARYAWAN -->
+        <div class="sidebar-heading">
+            MENU KARYAWAN
+        </div>
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                MENU ADMIN
-            </div>
+        <!-- Nav Item - Data Tugas Saya -->
+        <li class="nav-item {{ Request::is('karyawan/tugas') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('karyawanTugas') }}">
+                <i class="fas fa-tasks"></i>
+                <span>Data Tugas</span>
+            </a>
+        </li>
 
-            <!-- Nav Item - Charts -->
-            <li class="nav-item {{ $menuAdminUser ?? ''}}">
-                <a class="nav-link" href="{{ route('user') }}">
-                    <i class="fas fa-fw fa-user"></i>
-                    <span>Data User</span>
-                </a>
-            </li>
-            
-            <!-- Nav Item - Tables -->
-            <li class="nav-item {{ $menuAdminTugas ?? ''}}">
-                <a class="nav-link" href="{{ route('tugas') }}">
-                    <i class="fas fa-tasks"></i>
-                    <span>Data Tugas</span></a>
-            </li>
+    @endif
 
-            {{-- <!-- Divider -->
-            <hr class="sidebar-divider"><!-- Nav Item - Tables -->
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                MENU KARYAWAN
-            </div>
-            
+    <!-- Divider -->
+    <hr class="sidebar-divider d-none d-md-block">
 
-            <li class="nav-item">
-                <a class="nav-link" href="tables.html">
-                    <i class="fas fa-tasks"></i>
-                    <span>Data Tugas</span></a>
-            </li> --}}
+    <!-- Sidebar Toggler (Sidebar) -->
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </div>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider d-none d-md-block">
+</ul>
 
-            <!-- Sidebar Toggler (Sidebar) -->
-            <div class="text-center d-none d-md-inline">
-                <button class="rounded-circle border-0" id="sidebarToggle"></button>
-            </div>
-
-        </ul>
         <!-- End of Sidebar -->
 
         <!-- Content Wrapper -->
@@ -118,20 +129,19 @@
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
-
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">
                                     {{ auth()->user()->nama }}
                                 </span>
                                 <img class="img-profile rounded-circle"
-                                    src="{{asset('sbadmin2/img/undraw_profile.svg') }}">
+                                     src="{{ asset('sbadmin2/img/undraw_profile.svg') }}">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="userDropdown">
+                                 aria-labelledby="userDropdown">
                                 <a class="dropdown-item" href="#">
                                     <div class="badge badge-info justify-content-center d-flex">
                                         {{ auth()->user()->jabatan }}
@@ -148,7 +158,6 @@
                                 </a>
                             </div>
                         </li>
-
                     </ul>
 
                 </nav>
@@ -156,9 +165,7 @@
 
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
-
                     @yield('content')
-
                 </div>
                 <!-- /.container-fluid -->
 
@@ -169,7 +176,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Your Website 2020</span>
+                        <span>Copyright &copy; Tugasku {{ date('Y') }}</span>
                     </div>
                 </div>
             </footer>
@@ -187,47 +194,41 @@
     </a>
 
     <!-- Logout Modal-->
-<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Pilih "Logout" di bawah jika kamu ingin mengakhiri sesi saat ini.
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-primary">Logout</button>
+                    </form>
+                </div>
             </div>
-            <div class="modal-body">
-                Pilih "Logout" di bawah jika kamu ingin mengakhiri sesi saat ini.
-            </div>
-            <div class="modal-footer">
-    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-    <form action="{{ route('logout') }}" method="POST">
-        @csrf
-        <button type="submit" class="btn btn-primary">Logout</button>
-    </form>
-</div>
-
         </div>
     </div>
-</div>
 
-
-
-
-    <!-- Bootstrap JavaScript-->
+    {{-- ================== JS CORE ================== --}}
     <script src="{{ asset('sbadmin2/vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('sbadmin2/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('sbadmin2/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
     <script src="{{ asset('sbadmin2/js/sb-admin-2.min.js') }}"></script>
 
-     <!-- Page js plugins -->
+    {{-- ================== DATATABLES ================== --}}
     <script src="{{ asset('sbadmin2/vendor/datatables/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('sbadmin2/vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
-    <script src="{{ asset('sbadmin2/js/demo/datatables-demo.js') }}"></script>
-    <script src="{{ asset('sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
 
-    <!-- DataTables Buttons + dependencies -->
+    {{-- DataTables Buttons + dependencies --}}
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -235,22 +236,35 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
 
+    {{-- Demo DataTables (optional, kalau dipakai) --}}
     <script src="{{ asset('sbadmin2/js/demo/datatables-demo.js') }}"></script>
+
+    {{-- SweetAlert2 --}}
     <script src="{{ asset('sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
-    
+
+    {{-- Flash message SweetAlert --}}
     @if (session('success'))
         <script>
-            Swal.fire({ title: "Sukses!", text: "{{ session('success') }}", icon: "success" });
+            Swal.fire({
+                title: "Sukses!",
+                text: "{{ session('success') }}",
+                icon: "success"
+            });
         </script>
     @endif
 
     @if (session('error'))
         <script>
-            Swal.fire({ title: "Gagal!", text: "{{ session('error') }}", icon: "error" });
+            Swal.fire({
+                title: "Gagal!",
+                text: "{{ session('error') }}",
+                icon: "error"
+            });
         </script>
     @endif
-    
+
+    {{-- Tempat script tambahan dari tiap halaman --}}
+    @stack('scripts')
 
 </body>
-
 </html>

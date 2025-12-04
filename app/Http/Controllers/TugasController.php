@@ -14,7 +14,7 @@ class TugasController extends Controller
         $data = [
             "title"         => "Data Tugas",
             "menuAdminTugas"=> "active",
-            "tugas"         => Tugas::all(),   // ambil semua tugas
+            "tugas"         => Tugas::all(),
         ];
 
         return view('admin.tugas.index', $data);
@@ -26,13 +26,13 @@ class TugasController extends Controller
         $data = [
             "title"         => "Tambah Tugas",
             "menuAdminTugas"=> "active",
-            "users"         => User::all(),   // dropdown karyawan
+            "users"         => User::all(),
         ];
 
         return view('admin.tugas.create', $data);
     }
 
-    // SIMPAN TUGAS BARU
+    // =========================== STORE (UPDATE STATUS USER) ===========================
     public function store(Request $request)
     {
         $request->validate([
@@ -42,6 +42,7 @@ class TugasController extends Controller
             'tgl_selesai' => 'required|date',
         ]);
 
+        // SIMPAN TUGAS BARU
         Tugas::create([
             'nama'        => $request->nama,
             'tugas'       => $request->tugas,
@@ -49,10 +50,15 @@ class TugasController extends Controller
             'tgl_selesai' => $request->tgl_selesai,
         ]);
 
+        // UPDATE STATUS USER = SUDAH DITUGASKAN
+        User::where('nama', $request->nama)->update([
+            'is_tugas' => true
+        ]);
+
         return redirect()->route('tugas')->with('success', 'Tugas berhasil ditambahkan');
     }
 
-    // FORM EDIT TUGAS
+    // FORM EDIT
     public function edit($id)
     {
         $tugas = Tugas::findOrFail($id);
@@ -66,16 +72,15 @@ class TugasController extends Controller
         return view('admin.tugas.edit', $data);
     }
 
-    // UPDATE TUGAS
+    // =========================== UPDATE (STATUS TETAP TRUE) ===========================
     public function update(Request $request, $id)
     {
         $request->validate([
-    'nama'        => 'required',
-    'tugas'       => 'required',
-    'tgl_mulai'   => 'required|date',
-    'tgl_selesai' => 'required|date|after_or_equal:tgl_mulai',
-    ]);
-
+            'nama'        => 'required',
+            'tugas'       => 'required',
+            'tgl_mulai'   => 'required|date',
+            'tgl_selesai' => 'required|date|after_or_equal:tgl_mulai',
+        ]);
 
         $tugas = Tugas::findOrFail($id);
 
@@ -86,14 +91,29 @@ class TugasController extends Controller
             'tgl_selesai' => $request->tgl_selesai,
         ]);
 
+        // PASTIKAN USER TETAP STATUS DITUGASKAN
+        User::where('nama', $request->nama)->update([
+            'is_tugas' => true
+        ]);
+
         return redirect()->route('tugas')->with('success', 'Tugas berhasil diupdate');
     }
 
-    // HAPUS TUGAS
+    // =========================== DESTROY (KEMBALIKAN STATUS JIKA TIDAK ADA TUGAS) ===========================
     public function destroy($id)
     {
         $tugas = Tugas::findOrFail($id);
+        $namaUser = $tugas->nama;
         $tugas->delete();
+
+        // CEK APAKAH USER MASIH PUNYA TUGAS
+        $masihAda = Tugas::where('nama', $namaUser)->exists();
+
+        if (! $masihAda) {
+            User::where('nama', $namaUser)->update([
+                'is_tugas' => false
+            ]);
+        }
 
         return redirect()->route('tugas')->with('success', 'Tugas berhasil dihapus');
     }

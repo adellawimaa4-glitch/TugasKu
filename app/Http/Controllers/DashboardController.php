@@ -2,30 +2,40 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Tugas;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Hitung total user
-        $totalUser = User::count();
+        $title = 'Dashboard';
 
-        // Hitung total karyawan
-        $totalKaryawan = User::where('jabatan', 'Karyawan')->count();
+        // Hitung data user
+       $totalUser     = User::count();
+$totalAdmin    = User::where('jabatan', 'Admin')->count();
+$totalKaryawan = User::where('jabatan', 'Karyawan')->count();
 
-        // Hitung total admin
-        $totalAdmin = User::where('jabatan', 'Admin')->count();
+// jumlah tugas yang sudah dibuat (anggap = karyawan yang sudah ditugaskan)
+$totalDitugaskan = Tugas::count();
 
-        $data = [
-            "title"          => "Dashboard",
-            "menuDashboard"  => "active",
-            "totalUser"      => $totalUser,
-            "totalKaryawan"  => $totalKaryawan,
-            "totalAdmin"     => $totalAdmin,
-        ];
+// karyawan yang belum punya tugas
+$totalBelumDitugaskan = max($totalKaryawan - $totalDitugaskan, 0);
 
-        return view('dashboard', $data);
+
+        // Untuk highlight menu Dashboard di sidebar
+        $menuDashboard = 'active';
+
+        // PERHATIKAN: view-nya 'dashboard', bukan 'admin.dashboard'
+        return view('dashboard', compact(
+            'title',
+            'totalUser',
+            'totalAdmin',
+            'totalKaryawan',
+            'totalDitugaskan',
+            'totalBelumDitugaskan',
+            'menuDashboard'
+        ));
     }
 }
